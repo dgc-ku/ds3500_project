@@ -1,5 +1,5 @@
 """
-File: speech_scraper.py
+File: funion_class.py
 
 Description: A reusable, extensible framework
 for scraping and saving speech transcripts from various sources.
