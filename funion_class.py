@@ -25,7 +25,8 @@ class Funion:
         self.results = {
             "word_count": {},
             "word_length": {},
-            "sentiment": {}
+            "sentiment": {},
+            "num_words": {}
         }
 
 
