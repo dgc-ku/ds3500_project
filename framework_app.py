@@ -30,11 +30,19 @@ def main():
     fun.load_text("https://www.gov.uk/government/speeches/the-kings-speech-2024",
                   "uk_kings_speech.txt", label="UK King's Speech", parser=fp.scrape_uk)
 
-    # Optional: print collected data
+    # printing data dictionary
     pp.pprint(fun.data)
 
-    # Generate comparative visualization
+    # First viz
+    fun.create_word_sankey()
+    fun.show_word_sankey()
+
+    # second viz
+    fun.plot_word_barcharts()
+
+    # last viz
     fun.plot_summary()
+
 
 if __name__ == "__main__":
     main()

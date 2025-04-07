@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import plotly.graph_objects as go
+import matplotlib
+matplotlib.use('TkAgg')
 
 class Funion:
     def __init__(self, output_folder="speech_transcripts", stopword_file=None):
@@ -112,97 +114,6 @@ class Funion:
 
         self.save_transcript(transcript, filename)
 
-    def plot_summary(self):
-        """Create a scatter plot of word count vs sentiment, with
-        point size = avg word length"""
-        countries = []
-        word_counts = []
-        sentiments = []
-        avg_word_lengths = []
-
-        for country, stats in self.data.items():
-            countries.append(country)
-            word_counts.append(stats['num_words'])
-            sentiments.append(stats['sentiment'])
-            avg_word_lengths.append(stats['word_length'])
-
-        # Set up the plot
-        plt.figure(figsize=(12, 8))
-        scatter = plt.scatter(
-            word_counts,
-            sentiments,
-            s=[length * 80 for length in avg_word_lengths],  # Scale for visibility
-            c=sns.color_palette("hls", len(countries)),
-            alpha=0.7
-        )
-
-        # Annotate each point
-        for i, label in enumerate(countries):
-            plt.text(word_counts[i], sentiments[i] + 0.01, label, fontsize=9,
-                     ha='center')
-
-        # Add styling
-        plt.axhline(0, color='gray', linestyle='--', linewidth=0.8)
-        plt.title("Comparative Sentiment Analysis of Speeches", fontsize=16)
-        plt.xlabel("Word Count", fontsize=12)
-        plt.ylabel("Sentiment Polarity", fontsize=12)
-        plt.grid(True, linestyle='--', alpha=0.5)
-        plt.tight_layout()
-        plt.show()
-
-    def plot_word_barcharts(self, top_n=10):
-        """
-        Create matplotlib subplots showing top words per document
-
-        Args:
-            funion_instance: Loaded Funion instance
-            top_n: Number of top words to show per document
-        """
-        # get documents
-        documents = self.data.items()
-        num_docs = len(documents)
-
-        # create grid & figure
-        cols = 3
-        rows = int(np.ceil(num_docs / cols))
-
-        fig, axes = plt.subplots(rows, cols, figsize=(15, 5 * rows))
-        fig.tight_layout(pad=4.0)
-
-        axes = axes.flatten()
-
-        # subplot each document
-        for idx, (doc_name, stats) in enumerate(documents):
-            ax = axes[idx]
-            word_counts = stats['word_count']
-            top_words = word_counts.most_common(top_n)
-
-            words = [w[0] for w in top_words]
-            counts = [w[1] for w in top_words]
-
-            bars = ax.barh(words, counts, color='#B22222')
-            ax.invert_yaxis()  # Highest count at top
-
-            # add word count labels
-            for bar in bars:
-                width = bar.get_width()
-                ax.text(width + 0.10, bar.get_y() + bar.get_height() / 2,
-                        f'{int(width)}',
-                        ha='left', va='center',
-                        fontsize=9)
-
-            # subplot titles and axes
-            ax.set_title(doc_name)
-            ax.set_xlabel('Word Count')
-            ax.grid(True, axis='x', linestyle='--', alpha=0.6)
-
-            # remove empty subplot
-        for idx in range(len(documents), len(axes)):
-            fig.delaxes(axes[idx])
-
-        plt.suptitle(f'Top {top_n} Words per Document', y=1.02, fontsize=14)
-        plt.show()
-
     def create_word_sankey(self, wordlist=None, k=20):
         """
         create a sankey showing text-to-word relationships
@@ -285,9 +196,101 @@ class Funion:
             width=800,
             height=600
         )
+
         return fig
 
     def show_word_sankey(self, wordlist=None, k=20):
         # display sankey
         fig = self.create_word_sankey(k)
         fig.show()
+
+    def plot_word_barcharts(self, top_n=5):
+        """
+        Create matplotlib subplots showing top words per document
+
+        Args:
+            funion_instance: Loaded Funion instance
+            top_n: Number of top words to show per document
+        """
+        # get documents
+        documents = self.data.items()
+        num_docs = len(documents)
+
+        # create grid & figure
+        cols = 3
+        rows = int(np.ceil(num_docs / cols))
+
+        fig, axes = plt.subplots(rows, cols, figsize=(15, 5 * rows))
+        fig.tight_layout(pad=4.0)
+
+        axes = axes.flatten()
+
+        # subplot each document
+        for idx, (doc_name, stats) in enumerate(documents):
+            ax = axes[idx]
+            word_counts = stats['word_count']
+            top_words = word_counts.most_common(top_n)
+
+            words = [w[0] for w in top_words]
+            counts = [w[1] for w in top_words]
+
+            bars = ax.barh(words, counts, color='#B22222')
+            ax.invert_yaxis()  # Highest count at top
+
+            # add word count labels
+            for bar in bars:
+                width = bar.get_width()
+                ax.text(width + 0.10, bar.get_y() + bar.get_height() / 2,
+                        f'{int(width)}',
+                        ha='left', va='center',
+                        fontsize=9)
+
+            # subplot titles and axes
+            ax.set_title(doc_name)
+            ax.set_xlabel('Word Count')
+            ax.grid(True, axis='x', linestyle='--', alpha=0.6)
+
+            # remove empty subplot
+        for idx in range(len(documents), len(axes)):
+            fig.delaxes(axes[idx])
+
+        plt.suptitle(f'Top {top_n} Words per Document', y=1.02, fontsize=14)
+        plt.savefig("bar_chart.png")
+
+    def plot_summary(self):
+        """Create a scatter plot of word count vs sentiment, with
+        point size = avg word length"""
+        countries = []
+        word_counts = []
+        sentiments = []
+        avg_word_lengths = []
+
+        for country, stats in self.data.items():
+            countries.append(country)
+            word_counts.append(stats['num_words'])
+            sentiments.append(stats['sentiment'])
+            avg_word_lengths.append(stats['word_length'])
+
+        # Set up the plot
+        plt.figure(figsize=(12, 8))
+        scatter = plt.scatter(
+            word_counts,
+            sentiments,
+            s=[length * 80 for length in avg_word_lengths],  # Scale for visibility
+            c=sns.color_palette("hls", len(countries)),
+            alpha=0.7
+        )
+
+        # Annotate each point
+        for i, label in enumerate(countries):
+            plt.text(word_counts[i], sentiments[i] + 0.01, label, fontsize=9,
+                     ha='center')
+
+        # Add styling
+        plt.axhline(0, color='gray', linestyle='--', linewidth=0.8)
+        plt.title("Comparative Sentiment Analysis of Speeches", fontsize=16)
+        plt.xlabel("Word Count", fontsize=12)
+        plt.ylabel("Sentiment Polarity", fontsize=12)
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.savefig("third_visualization.png")
